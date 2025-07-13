@@ -6,7 +6,6 @@ import { X } from 'lucide-react-native'
 import { useAuthStore } from './store/auth'
 
 
-
 export default function Index() {
 
   const [ email, setEmail ] = useState('')
@@ -43,7 +42,7 @@ export default function Index() {
   }
 
   const handleSubmit = async () => {
-    const API_URL = 'http://192.168.16.232:8000/api';
+    const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
     try {
       const res = await axios.post(`${API_URL}/login`, {
@@ -58,9 +57,11 @@ export default function Index() {
       console.log(res.data)
 
       const token = res.data.access_token
+      const fullName = res.data.fullname
       useAuthStore.getState().setToken(token)
+      useAuthStore.getState().setName(fullName)
 
-      router.push('/home')
+      router.replace('/home')
     }
     catch(err: any) {
       console.log(err.response?.data);
@@ -87,8 +88,21 @@ export default function Index() {
         }
 
         <View style={styles.form}>
-          <TextInput style={styles.input} placeholder='Enter your email' placeholderTextColor={'#bec1c5'} value={email} onChangeText={setEmail}  />
-          <TextInput style={styles.input} placeholder='Enter your password' placeholderTextColor={'#bec1c5'} value={password} onChangeText={setPassword} />
+          <TextInput 
+          style={styles.input} 
+          placeholder='Enter your email' 
+          placeholderTextColor={'#bec1c5'} 
+          value={email} 
+          onChangeText={setEmail}  
+          />
+          <TextInput 
+          style={styles.input} 
+          placeholder='Enter your password' 
+          placeholderTextColor={'#bec1c5'} 
+          value={password} 
+          onChangeText={setPassword}
+          secureTextEntry 
+          />
           <Pressable onPress={handleSubmit} style={styles.submit} >
             <Text style={styles.text}>Login</Text>
           </Pressable>

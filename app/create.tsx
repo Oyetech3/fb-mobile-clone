@@ -1,4 +1,4 @@
-import {  Image, KeyboardAvoidingView, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native'
+import {  Image, KeyboardAvoidingView, Platform, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
 import React, { useState } from 'react'
 import { useRouter } from 'expo-router'
 import axios from 'axios'
@@ -8,6 +8,7 @@ import { X } from 'lucide-react-native'
 export default function Create() {
 
   const [ email, setEmail ] = useState('')
+  const [ fullName, setFullName ] = useState('')
   const [ password, setPassword ] = useState('')
   const [ confirmPassword, setConfirmPassword ] = useState('')
   const [ success, setSuccess ] = useState(false)
@@ -17,11 +18,12 @@ export default function Create() {
   const router = useRouter()
 
   const handleSubmit = async () => {
-    const API_URL = 'http://192.168.16.232:8000/api';
+    const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
     try {
       const res = await axios.post(`${API_URL}/user`, {
         email,
+        fullname: fullName,
         password,
         confirm_password: confirmPassword
       })
@@ -29,6 +31,7 @@ export default function Create() {
       setError(false)
       setMessage(res.data.message)
       setEmail('')
+      setFullName('')
       setPassword('')
       setConfirmPassword('')
       console.log(res.data)
@@ -47,41 +50,79 @@ export default function Create() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View>
-        <Image style={styles.image} source={require('../assets/images/fb-image.png')} resizeMode='contain' accessibilityLabel='facebook' />
-      </View>
-      <KeyboardAvoidingView behavior='padding'>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0} 
+      >
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+          <View>
+            <Image
+              style={styles.image}
+              source={require('../assets/images/fb-image.png')}
+              resizeMode="contain"
+              accessibilityLabel="facebook"
+            />
+          </View>
 
-        {
-          success && !error &&
-          <View style={styles.success}>
-            <Text>{message}</Text>
-        </View>
-        }
-        {
-          error && !success &&
-          <View style={styles.error}>
-            <Text >{message}</Text>
-            <X onPress={() => setError(false)} />
-        </View>
-        }
+          {success && !error && (
+            <View style={styles.success}>
+              <Text>{message}</Text>
+            </View>
+          )}
+          {error && !success && (
+            <View style={styles.error}>
+              <Text>{message}</Text>
+              <X onPress={() => setError(false)} />
+            </View>
+          )}
 
-        <View style={styles.form}>
-          <TextInput style={styles.input} placeholder='Enter your email' placeholderTextColor={'#bec1c5'} value={email} onChangeText={setEmail}  />
-          <TextInput style={styles.input} placeholder='Enter your password' placeholderTextColor={'#bec1c5'} value={password} onChangeText={setPassword} />
-          <TextInput style={styles.input} placeholder='Confirm your password' placeholderTextColor={'#bec1c5'} value={confirmPassword} onChangeText={setConfirmPassword} />
-          <Pressable onPress={handleSubmit} style={styles.submit} >
-            <Text style={styles.text}>Register</Text>
-          </Pressable>
-        </View>
+          <View style={styles.form}>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your fullname"
+              placeholderTextColor="#bec1c5"
+              value={fullName}
+              onChangeText={setFullName}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your email"
+              placeholderTextColor="#bec1c5"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your password"
+              placeholderTextColor="#bec1c5"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Confirm your password"
+              placeholderTextColor="#bec1c5"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry
+            />
+            <Pressable onPress={handleSubmit} style={styles.submit}>
+              <Text style={styles.text}>Register</Text>
+            </Pressable>
+          </View>
+
+          <View>
+            <Pressable onPress={() => router.push('/login')} style={styles.createContainer}>
+              <Text style={styles.createText}>Go to Login</Text>
+            </Pressable>
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
-      <View>
-        <Pressable onPress={() => router.push('/login')} style={styles.createContainer}>
-          <Text style={styles.createText}>Go to Login</Text>
-        </Pressable>
-      </View>
     </SafeAreaView>
-  )
+  );
 }
 
 const styles = StyleSheet.create({

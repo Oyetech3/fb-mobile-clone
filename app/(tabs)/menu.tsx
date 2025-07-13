@@ -12,7 +12,7 @@ export default function Menu() {
   const router = useRouter()
 
   const logout = async () => {
-    const API_URL = 'http://192.168.16.232:8000/api';
+    const API_URL = 'http://172.20.10.8:8000/api';
 
     try {
       const res = await axios.post(`${API_URL}/logout`, {}, {
